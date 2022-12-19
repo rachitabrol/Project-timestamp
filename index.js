@@ -18,10 +18,53 @@ app.get("/", function (req, res) {
   res.sendFile(__dirname + '/views/index.html');
 });
 
+var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+var days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+function timeConverter(UNIX_timestamp) {
+  var a;
+  if(UNIX_timestamp=="now"){
+    a = new Date();
+  }else a = new Date(UNIX_timestamp * 1000);
+  var year = a.getFullYear();
+  var month = months[a.getMonth()];
+  var date = a.getDate() > 9 ? a.getDate() : '0' + a.getDate();
+  var hour = a.getHours() > 9 ? a.getHours() : '0' + a.getHours();
+  var min = a.getMinutes() > 9 ? a.getMinutes() : '0' + a.getMinutes();
+  var sec = a.getSeconds() > 9 ? a.getSeconds() : '0' + a.getSeconds();
+  var day = days[a.getDay()];
+  var time = day + ', ' + date + ' ' + month + ' ' + year + ' ' + hour + ':' + min + ':' + sec + ' GMT';
+  return time;
+}
+
+app.get("/api/:time", function(req, res) {
+  console.log(req.params.time);
+  
+  if (/\d{5,}/.test(req.params.time)) {
+
+    const dateInt = parseInt(req.params.time);
+
+    res.json({ unix: dateInt, utc: new Date(dateInt).toUTCString() });
+
+  } else {
+
+    let dateObject = new Date(req.params.time);
+
+    if (dateObject.toString() === "Invalid Date") {
+
+      res.json({ error: "Invalid Date" });
+
+    } else {
+
+      res.json({ unix: dateObject.valueOf(), utc: dateObject.toUTCString() });
+
+    }
+
+  }
+});
 
 // your first API endpoint... 
-app.get("/api/hello", function (req, res) {
-  res.json({greeting: 'hello API'});
+app.get("/api", function(req, res) {
+  res.json({ unix: parseInt((new Date()).getTime()), utc: timeConverter("now") });
 });
 
 
